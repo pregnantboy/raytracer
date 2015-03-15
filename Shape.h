@@ -5,7 +5,7 @@ class Shape
 public:
 	Shape();
 	~Shape();
-	virtual bool intersect(Ray &ray, double* t_hit, LocalGeo* local) = 0;
+	virtual bool intersect(Ray &ray, float* t_hit, LocalGeo* local) = 0;
 	virtual bool intersectP(Ray &ray) = 0;
 };
 
@@ -34,18 +34,18 @@ public:
 		double A = (*ray.dir).dot(*ray.dir);
 		double AC = ((*AminusC).dot(*AminusC) - r*r)*(A);
 		double dis = Bsquared - 4*AC;
-		double t_hit;
+		float t_hit;
 		if (dis >= 0){
 			double sqdis = sqrt(dis);
 			double t1 = (-B + (sqdis)) / (2*A);
 			double t2 = (-B - (sqdis)) / (2*A);
 			if ((t1 < t2) && (t1>0)){
-				t_hit = t1;
+				t_hit = (float)t1;
 				cout << "t_hit" << t_hit;
 				return true;
 			}
 			else if (t2 > 0){
-				t_hit = t2;
+				t_hit = (float)t2;
 				cout << "t_hit" << t_hit;
 
 				return true;
@@ -56,7 +56,7 @@ public:
 
 	}
 
-	bool intersect(Ray &ray, double* t_hit, LocalGeo* local){
+	bool intersect(Ray &ray, float* t_hit, LocalGeo* local){
 		Point* center = new Point(x, y, z);
 		Vector *AminusC = (*ray.pos) - *center;
 		//t^2D^2 + 2tD(A-C) + ((A-C)^2- r^2) = 0
@@ -99,9 +99,9 @@ public:
 	Normal *normal,*oppnormal;
 	Vector *v1, *v2minusv1, *v3minusv1;
 	Triangle(Point* ver1, Point* ver2, Point* ver3){
-		pt1 = ver1;
-		pt2 = ver2;
-		pt3 = ver3;
+		pt1 = new Point( ver1->x,ver1->y,ver1->z);
+		pt2 = new Point(ver2->x, ver2->y, ver2->z);
+		pt3 = new Point(ver3->x, ver3->y, ver3->z);
 		v1 = new Vector(pt1->x, pt1->y, pt1->z);
 		v2minusv1 = (*pt2) - (*pt1);
 		v3minusv1 = (*pt3) - (*pt1);
@@ -122,7 +122,8 @@ public:
 			xc, yc, zc,
 			xd, yd, zd;
 
-		double beta, gamma, t_hit;
+		double beta, gamma;
+		float t_hit;
 
 		double a, b, c,
 			d, e, f,
@@ -170,8 +171,7 @@ public:
 		return true;
 	}
 
-	cout << "checking for triangle intersection:" << (*tri).intersect(*ray, &t_hit, lg) << endl;
-	bool intersect(Ray &ray, double* t_hit, LocalGeo* local){
+	bool intersect(Ray &ray, float* t_hit, LocalGeo* local){
 		double xe, ye, ze,
 			xa, ya, za,
 			xb, yb, zb,

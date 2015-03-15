@@ -5,16 +5,16 @@ int main(){
 	Point* v = new Point(1, 2, 3);
 	
 	Point* b = new Point(3, 4, 5);
-	cout << v->x << endl;
+	//cout << v->x << endl;
 	Vector *line = (*v) - *b;
 	Normal *nmm = new Normal(line);
-	(*nmm).print();
+	
 
 	LocalGeo *lg = new LocalGeo();
 	
 
 	Ray* ray = new Ray(new Point(0, 0, 0), new Vector(0, 0, 1));
-	double t_hit;
+	float t_hit;
 	Sphere* sp2 = new Sphere(0, 0, 4, 1);
 
 	
@@ -26,6 +26,19 @@ int main(){
 	cout << "t_hit" << t_hit << endl;
 	cout << "normal:";
 	(*lg).print();
+	
+	
+
+	Matrix* m = new Matrix(1, 3, 2, 1);
+	Transformation* tra = new Transformation(m);
+	tra->m->print();
+	tra->minvt->print();
+	
+	lg = (*tra)*(lg);
+	lg->normal->print();
+
+
+
 	system("pause");
 	return 0;
 }

@@ -1,4 +1,4 @@
-
+#include "nv_math.h"
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -7,11 +7,13 @@
 #include <iostream>
 #include <cassert>
 
+
 #define PI 3.141592653589793
 
 
 using namespace std;
 float determinant(int n, float mat[4][4]);
+
 
 class Vector
 {
@@ -132,12 +134,12 @@ public:
 		return new Vector(x, y, z);
 	}
 
-	Vector operator- (Vector n)
+	Vector* operator- (Vector n)
 	{
 		x = x - n.x;
 		y = y - n.y;
 		z = z - n.z;
-		return Vector(x, y, z);
+		return new Vector(x, y, z);
 	}
 	Vector* operator- (Point n)
 	{
@@ -300,48 +302,74 @@ public:
 	}
 	
 };
-/*
-float determinant(int n, float mat[4][4]){
-	float d = 0;
-	int c, subi, i, j, subj;
-	float submat[4][4];
-	if (n == 2)
-	{
-		return((mat[0][0] * mat[1][1]) - (mat[1][0] * mat[0][1]));
+
+class LocalGeo {
+public:
+	Point *pos;
+	Normal *normal;
+	LocalGeo(){
+		pos = new Point();
+		normal = new Normal();
 	}
-	else
-	{
-		for (c = 0; c < n; c++)
-		{
-			subi = 0;
-			for (i = 1; i < n; i++)
-			{
-				subj = 0;
-				for (j = 0; j < n; j++)
-				{
-					if (j == c)
-					{
-						continue;
-					}
-					submat[subi][subj] = mat[i][j];
-					subj++;
-				}
-				subi++;
-			}
-			d = d+ (pow(-1, c) * mat[0][c] * determinant(n - 1, submat));
-		}
+	LocalGeo(Point *poss, Normal *norm){
+		pos = new Point(poss->x, poss->y, poss->z);
+		normal = new Normal(norm->x, norm->y, norm->z);
 	}
-	return d;
-}
-*/
+	void print(){
+		cout << "LocalGeo:";
+		pos->print();
+		normal->print();
+	}
+};
 
 class Transformation{
 public:
-	Matrix m;
-	Matrix minvt;
-	Transformation(Matrix mm){
+	Matrix *m;
+	Matrix *minvt;
+	mat4 *temp, *tempinvt;
+	Transformation(Matrix *mm){
 		m = mm;
-		//inverse(mm.mat, minvt.mat);
+		temp = new mat4(m->mat[0][0], m->mat[1][0], m->mat[2][0], m->mat[3][0],
+			m->mat[0][1], m->mat[1][1], m->mat[2][1], m->mat[3][1],
+			m->mat[0][2], m->mat[1][2], m->mat[2][2], m->mat[3][2],
+			m->mat[0][3], m->mat[1][3], m->mat[2][3], m->mat[3][3]);
+		mat4 *tempinv = new mat4();
+		invert(*tempinv,*temp);
+		tempinvt = new mat4();
+		transpose(*tempinvt, *tempinv);
+		float temp2[4][4] = { tempinvt->a00, tempinvt->a01, tempinvt->a02, tempinvt->a03, tempinvt->a10, tempinvt->a11, tempinvt->a12, tempinvt->a13, tempinvt->a20, tempinvt->a21, tempinvt->a22, tempinvt->a23, tempinvt->a30, tempinvt->a31, tempinvt->a32, tempinvt->a33 };
+		minvt = new Matrix(temp2);
+	}
+	Point* operator * (Point* p){
+		vec4 *point = new vec4(p->x, p->y, p->z, 1);
+		vec4* result = new vec4();
+		mult(*result, *temp, *point);
+		return new Point(result->x, result->y, result->z);
+	}
+	Vector* operator* (Vector* v){
+		vec4 *vector = new vec4(v->x, v->y, v->z, 1);
+		vec4* result = new vec4();
+		mult(*result, *temp, *vector);
+		return new Vector(result->x, result->y, result->z);
+	}
+	Ray* operator* (Ray *r){
+		Ray* result = new Ray();
+		result->dir = (*this)*r->dir;
+		result->pos = (*this)*r->pos;
+		return result;
+	}
+	Normal* operator * (Normal *n){
+		vec4 *vector = new vec4(n->x, n->y, n->z, 1);
+		vec4* result = new vec4();
+		mult(*result, *tempinvt, *vector);
+		return new Normal(result->x, result->y, result->z);
+	}
+
+	LocalGeo * operator * (LocalGeo *lg){
+		LocalGeo* result = new LocalGeo();
+		result->normal = (*this)*(lg->normal);
+		result->pos = (*this)* (lg->pos);
+		return result;
 	}
 };
 
@@ -384,10 +412,10 @@ public:
 	}
 
 	BRDF(Color* kkd, Color *kks, Color *kka, Color *kkr){
-		kd = kkd;
-		ks = kks;
-		ka = kka;
-		kr = kkr;
+		kd = new Color (kkd->r,kkd->g,kkd->b);
+		ks = new Color(kks->r, kks->g, kka->b);
+		ka = new Color(kka->r, kka->g, kka->b);
+		kr = new Color(kkr->r, kkr->g, kkr->b);
 	}
 	void print(){
 		cout << "BRDF:" << endl;
@@ -419,22 +447,15 @@ public:
 
 };
 
-class LocalGeo {
+
+
+class Material {
 public:
-	Point *pos;
-	Normal *normal;
-	LocalGeo(){
-		pos = new Point();
-		normal = new Normal();
+	BRDF* constantBRDF;
+	Material(BRDF* brdf){
+		constantBRDF = new BRDF(brdf->kd, brdf->ks, brdf->ka, brdf->kr);
 	}
-	LocalGeo(Point *poss, Normal *norm){
-		pos = poss;
-		normal = norm;
-	}
-	void print(){
-		cout << "LocalGeo:";
-		pos->print();
-		normal->print();
+	void getBRDF(LocalGeo& local, BRDF* brdf) {
+		constantBRDF = new BRDF(constantBRDF->kd, constantBRDF->ks, constantBRDF->ka, constantBRDF->kr);
 	}
 };
-
