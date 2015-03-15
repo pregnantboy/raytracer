@@ -1,5 +1,5 @@
 
-#include "Shape.h"
+#include "Primitive.h"
 
 int main(){
 	Point* v = new Point(1, 2, 3);
@@ -26,16 +26,34 @@ int main(){
 	cout << "t_hit" << t_hit << endl;
 	cout << "normal:";
 	(*lg).print();
-	
-	
-
+	Color* color = new Color(1, 1, 1);
+	Color* color2 = new Color(2, 1, 1);
+	Color* color3 = new Color(3, 1, 1);
+	Shape* shape = tri;
+	Material *mat = new Material(new BRDF(color, color,color, color));
+	Material *mat2 = new Material(new BRDF(color2, color2, color2, color2));
+	Material *mat3 = new Material(new BRDF(color3, color3, color3, color3));
 	Matrix* m = new Matrix(1, 3, 2, 1);
 	Transformation* tra = new Transformation(m);
 	tra->m->print();
 	tra->minvt->print();
-	
+	/*
 	lg = (*tra)*(lg);
 	lg->normal->print();
+	*/
+
+	Primitive *p1 = new GeometricPrimitive(tra, tra, tri, mat);
+	GeometricPrimitive *p2 = new GeometricPrimitive(tra, tra, tri, mat2);
+	GeometricPrimitive *p3 = new GeometricPrimitive(tra, tra, tri, mat3);
+
+	vector<Primitive*> pri;
+	pri.push_back( p1);
+	pri.push_back(p2);
+	pri.push_back(p3);
+
+	AggregatePrimitive* prigrand = new AggregatePrimitive(pri);
+	GeometricPrimitive *p4 = (GeometricPrimitive*) (prigrand->primitives[2]);
+	p4->mat->constantBRDF->print();
 
 
 
