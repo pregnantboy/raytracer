@@ -76,7 +76,7 @@ public:
 	*/
 	bool intersect(Ray& ray, float* thit, Intersection* in){ 
 		double closestt = 9999999;
-		Primitive* closestp;
+		Primitive* closestp = NULL;
 		for (int i = 0; i < primitives.size(); i++){
 			if (primitives[i]->intersect(ray,thit,in)){
 				if (*thit < closestt){
@@ -86,6 +86,9 @@ public:
 			}
 		}
 		if (closestt == 9999999){
+			return false;
+		}
+		if (closestp == NULL){
 			return false;
 		}
 		else{

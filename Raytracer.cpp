@@ -1,5 +1,4 @@
-
-#include "Primitive.h"
+#include "Raytracer.h"
 
 int main(){
 	Point* v = new Point(1, 2, 3);
