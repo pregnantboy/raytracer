@@ -15,15 +15,16 @@ public:
 	//void pathTrace2(Ray& ray, int depth, Color* color, bool indirect);
 	//void pathTrace(Ray& ray, int depth, Color* color);
 	void trace(Ray& ray, int depth, Color& color){
-		Intersection *in = new Intersection();
+		Intersection* in = (Intersection*)malloc(sizeof(Intersection));
+		in = new Intersection();
 		if (depth > maxDepth) {
 			//reach max depth
 			color = Color(0, 0, 0);
 			return;
 		}
-		float thit;
-
-		if (!primitives->intersect(ray, &thit, in)) {
+		float thit =0;
+		bool truefalse = primitives->intersect(ray, &thit, in);
+		if (!truefalse) {
 			color = Color(0, 0, 0);
 			return;
 		}
@@ -67,7 +68,7 @@ public:
 			Color*resultingcolor = color + *addColor;
 			color = *resultingcolor;
 		}
-
+		
 	}
 	Color shading(LocalGeo local, BRDF brdf, Ray lray, Color lcolor,Ray ray){
 		Color *result = new Color(0.0, 0.0, 0.0);
@@ -78,7 +79,7 @@ public:
 		Vector* reflectedDir = (*norm)*(2 * ldirDotN);
 		reflectedDir = (*reflectedDir) - (*lray.dir);
 		reflectedDir = reflectedDir->normalize();				//i should right?
-		Vector* viewingray = (*lray.dir)*(-1.0);  // negative dir of ray
+		Vector* viewingray = (*ray.dir)*(-1.0);  // negative dir of ray
 		double rdotv = (*reflectedDir).dot(*viewingray);  
 		if (rdotv < 0) rdotv = 0;
 
@@ -106,5 +107,22 @@ public:
 		return new Ray(newPos, reflectedDir);
 
 	};
-	//Ray createRefractedRay(LocalGeo local, Ray &ray, float rindex, bool* refract);
+	/*
+	Color* speculate(LocalGeo geo, BRDF brdf, Ray lray, Color lcolor, Ray ray) {
+		Vector* l = lray.dir->normalize();
+		Vector* n = new Vector (geo.normal->x, geo.normal->y,geo.normal->z);
+
+		Vector* r = l.times(-1).plus(n.times(2 * n.dot(l))).normalize();
+		Vector v = origin.minus(geo.getPos()).normalize();
+		double dot = r.dot(v);
+		if (dot < 0) {
+			dot = 0;
+		}
+		else {
+			dot = Math.pow(dot, sp);
+		}
+		Color s = colorific(dot, brdf.getKs(), lcolor);
+		return colorific(dot, brdf.getKs(), lcolor);
+	}
+	*/
 };

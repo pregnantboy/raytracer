@@ -33,10 +33,11 @@ public:
 	}
 
 	bool intersect(Ray& ray, float* thit, Intersection* in){
-		Ray *oray = (*worldToObj)* (&ray);
+		Ray* oray = (*worldToObj)* (&ray);
 		LocalGeo* olocal = new LocalGeo();
-		if (!shape->intersect(*oray, thit, olocal))  
+		if (!shape->intersect(*oray, thit, olocal))  {
 			return false;
+		}
 		in->primitive = this;
 		in->localGeo = (*objToWorld)*(olocal);
 		return true;

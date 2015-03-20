@@ -48,10 +48,10 @@ public:
   void generateLightRay(LocalGeo &local, Ray *lray, Color &lcolor)
   {
         lray->pos =  new Point(local.pos->x+.001*dir->x, local.pos->y+.001*dir->y, local.pos->z+.001*dir->z);
-        lray->dir = dir;
+        lray->dir = dir->normalize();
 		lcolor = Color(color->r, color->g, color->b);
         lray->t_min = 0;
-        lray->t_max = INFINITY;
+        lray->t_max = 999999;
   }
   /*
   void getAtt(double* att) {

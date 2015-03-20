@@ -165,11 +165,11 @@ public:
 	Vector *dir;
 	float t_min, t_max;
 	Ray(){
-		pos = new Point();
-		dir = new Vector();
+		
 		t_min = 0;
 		t_max = INFINITY;
 	}
+	~Ray(){}
 	Ray(Point *ppos, Vector *ddir)
 	{
 		pos = ppos;
@@ -341,14 +341,19 @@ public:
 		float temp2[4][4] = { tempinvt->a00, tempinvt->a01, tempinvt->a02, tempinvt->a03, tempinvt->a10, tempinvt->a11, tempinvt->a12, tempinvt->a13, tempinvt->a20, tempinvt->a21, tempinvt->a22, tempinvt->a23, tempinvt->a30, tempinvt->a31, tempinvt->a32, tempinvt->a33 };
 		minvt = new Matrix(temp2);
 	}
+	~Transformation(){}
 	Point* operator * (Point* p){
-		vec4 *point = new vec4(p->x, p->y, p->z, 1);
+		vec4 *point = (vec4*)malloc(sizeof(vec4));
+		point = new vec4(p->x, p->y, p->z, 1);
 		vec4* result = (vec4*) malloc(sizeof(vec4));
+		result = new vec4(0, 0, 0,0);
 		mult(*result, *temp, *point);
+		
 		return new Point(result->x, result->y, result->z);
 	}
 	Vector* operator* (Vector* v){
-		vec4 *vector = new vec4(v->x, v->y, v->z, 1);
+		vec4* vector = (vec4*)malloc(sizeof(vec4));
+		vector = new vec4(v->x, v->y, v->z, 1);
 		vec4* result = new vec4();
 		mult(*result, *temp, *vector);
 		return new Vector(result->x, result->y, result->z);

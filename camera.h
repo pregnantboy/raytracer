@@ -17,9 +17,10 @@ public:
 		}
 		void generateRay(Sample* samp, Ray& ray) {
 			ray.pos = eyepos;
-			double u = 1-samp->x;
-			double v = 1-samp->y;
-			//cout << samp->x<<endl;
+			double u = samp->x;
+			double v = samp->y;
+
+			/*
 			Vector *pv11 = (*ll)*v;
 			Vector* pv12 = (*ul)*(1 - v);
 			Vector* pv13 = *pv11 + *pv12;
@@ -29,8 +30,9 @@ public:
 			Vector* pv22 = (*ur)*(1 - v);
 			Vector* pv23 = *pv21 + *pv22;
 			Vector* pv2 = (*pv23)*(1 - u);
-			Vector* pv = *pv1 + *pv2;
-			Point* p = new Point(pv->x,pv->y,pv->z);
+			Vector* pv = *pv1 + *pv2;*/
+			Point* p = new Point(samp->x,samp->y,0);
+			
 			Vector* newdir = *p - *eyepos;
 			newdir = newdir->normalize();
 			ray.dir = newdir;
