@@ -1,10 +1,8 @@
-#include "Objects.h"
+#include "Sampler.h"
 
 class Shape
 {
 public:
-	Shape();
-	~Shape();
 	virtual bool intersect(Ray &ray, float* t_hit, LocalGeo* local) = 0;
 	virtual bool intersectP(Ray &ray) = 0;
 };

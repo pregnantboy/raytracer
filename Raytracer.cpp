@@ -1,61 +1,60 @@
-#include "Raytracer.h"
+
+#include "camera.h"
 
 int main(){
-	Point* v = new Point(1, 2, 3);
-	
-	Point* b = new Point(3, 4, 5);
-	//cout << v->x << endl;
-	Vector *line = (*v) - *b;
-	Normal *nmm = new Normal(line);
-	
 
-	LocalGeo *lg = new LocalGeo();
-	
+	Film* film = new Film(100, 100);
+	Sphere* sphere = new Sphere(10, 10, 10, 10);
 
-	Ray* ray = new Ray(new Point(0, 0, 0), new Vector(0, 0, 1));
-	float t_hit;
-	Sphere* sp2 = new Sphere(0, 0, 4, 1);
+	Transformation* none = new Transformation(new Matrix());
+	Material* mat = new Material(new BRDF(new Color(0.3, 0.3, 0.3), new Color(0.3, 0.3, 0.3), new Color(0.3, 0.3, 0.3), new Color(0.3, 0.3, 0.3)));
+	GeometricPrimitive* geosphere = new GeometricPrimitive(none, none, sphere, mat);
+	vector<Primitive*> privec;
+	privec.push_back(geosphere);
+	AggregatePrimitive* aggpri = new AggregatePrimitive(privec);
 
-	
-	Point *pt1 = new Point(0, 0, 1);
-	Point *pt2 = new Point(-1, 1,3);
-	Point *pt3 = new Point(1, 2, 2);
-	Triangle* tri = new Triangle(pt1, pt2, pt3);
-	cout << "checking for triangle intersection:" << (*tri).intersect(*ray,&t_hit,lg) << endl;
-	cout << "t_hit" << t_hit << endl;
-	cout << "normal:";
-	(*lg).print();
-	Color* color = new Color(1, 1, 1);
-	Color* color2 = new Color(2, 1, 1);
-	Color* color3 = new Color(3, 1, 1);
-	Shape* shape = tri;
-	Material *mat = new Material(new BRDF(color, color,color, color));
-	Material *mat2 = new Material(new BRDF(color2, color2, color2, color2));
-	Material *mat3 = new Material(new BRDF(color3, color3, color3, color3));
-	Matrix* m = new Matrix(1, 3, 2, 1);
-	Transformation* tra = new Transformation(m);
-	tra->m->print();
-	tra->minvt->print();
+	Vector* lightpos = new Vector(0, 0, 0);
+	Color* lightcolor = new Color(0.1, 0.2, 0.3);
+
+	PointLight* ptlight = new PointLight(lightpos,lightcolor);
+
+	Raytracer* raytracer = new Raytracer();
+	raytracer->lights.push_back(ptlight);
+	raytracer->primitives = aggpri;
+	raytracer->maxDepth = 5;
+
+	Vector* camdir = new Vector(0, 0, 1);
+	Vector* camup = new Vector(0, 1, 0);
+	Camera* cam = new Camera(lightpos, camdir, camup, 100, 100, 100);
+
+	Sampler* sampler = new Sampler(100, 100);
+	Sample* sample = new Sample();
+	while (sampler->getSample(sample)){
+		Ray* ray = new Ray();
+		Color* outputcolor = new Color();
+		cam->generateRay(*sample, ray);
+		
+		raytracer->trace(*ray, 0, outputcolor);
+	}
+
+	cout << "end of output" << endl;
 	/*
-	lg = (*tra)*(lg);
-	lg->normal->print();
+
+	for (int i = 0; i < 100; i++){
+		for (int j = 0; j < 100; j++){
+			
+			Color* color = new Color(0.3, .4, .5);
+			Sample* sample = new Sample(i, j);
+			film->commit(sample, color);
+		}
+	}
+	
+	film->writeImage("output.png");
+	cout << "output.png written" << endl;
+
+
 	*/
-
-	Primitive *p1 = new GeometricPrimitive(tra, tra, tri, mat);
-	GeometricPrimitive *p2 = new GeometricPrimitive(tra, tra, tri, mat2);
-	GeometricPrimitive *p3 = new GeometricPrimitive(tra, tra, tri, mat3);
-
-	vector<Primitive*> pri;
-	pri.push_back( p1);
-	pri.push_back(p2);
-	pri.push_back(p3);
-
-	AggregatePrimitive* prigrand = new AggregatePrimitive(pri);
-	GeometricPrimitive *p4 = (GeometricPrimitive*) (prigrand->primitives[2]);
-	p4->mat->constantBRDF->print();
-
-
-
 	system("pause");
 	return 0;
+
 }
