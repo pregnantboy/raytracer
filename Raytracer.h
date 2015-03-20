@@ -14,48 +14,58 @@ public:
 	//void directIllumination(Ray& ray, Color* color, BRDF brdf){}
 	//void pathTrace2(Ray& ray, int depth, Color* color, bool indirect);
 	//void pathTrace(Ray& ray, int depth, Color* color);
-	void trace(Ray& ray, int depth, Color* color){
+	void trace(Ray& ray, int depth, Color& color){
 		Intersection *in = new Intersection();
 		if (depth > maxDepth) {
-			cout << "NO HIT!" << endl;
-			color = new Color(0, 0, 0);
+			//reach max depth
+			color = Color(0, 0, 0);
+			return;
+		}
+		float thit;
+
+		if (!primitives->intersect(ray, &thit, in)) {
+			color = Color(0, 0, 0);
 			return;
 		}
 		
-		float thit;
-		if (!primitives->intersect(ray, &thit, in)) {
-			// No intersection
-			color = new Color(0, 0, 0);
-			return;
-		}
+		//cout << "hit"<< endl;
 		// Obtain the brdf at intersection point
 		BRDF* brdf = new BRDF();
 		LocalGeo* local = in->localGeo;
-		in->primitive->getBRDF(*local, brdf);
-
+		in->primitive->getBRDF(*local, *brdf);
+		
 		// There is an intersection, loop through all light source
 
 		Ray lray;
 		Color lcolor = Color (0,0,0);
 		//color = (*color) + (*brdf->ka);
 		for (vector<Light*>::iterator l = lights.begin(); l != lights.end(); l++) {
-			(*l)->generateLightRay(*local, &lray, &lcolor);
+
+			(*l)->generateLightRay(*local, &lray, lcolor);
 
 			// Check if the light is blocked or not
-			if (!primitives->intersectP(lray))
-				// If not, do shading calculation for this
-				// light source
-				color = (*color) + shading(*local, *brdf, lray, lcolor,ray);
+
+			if (!primitives->intersectP(lray)){
+			//cout << "light is through" << endl;
+			// If not, do shading calculation for this
+			// light source
+				Color* resultingcolor = (color) + shading(*local, *brdf, lray, lcolor, ray);
+				color = *resultingcolor;
+				//color.print();
+			}
+			
 		}
 		Ray* reflectRay;
 		// Handle mirror reflection
+		
 		if (brdf->kr > 0) {
 			reflectRay = createReflectedRay(local, ray);
 			Color* tempColor = new Color(0, 0, 0);
 			// Make a recursive call to trace the reflected ray
-			trace(*reflectRay, depth + 1, tempColor);
+			trace(*reflectRay, depth + 1, *tempColor);
 			Color* addColor = ((*brdf->kr) * (*tempColor));
-			color = (*color) + (*addColor);
+			Color*resultingcolor = color + *addColor;
+			color = *resultingcolor;
 		}
 
 	}
@@ -67,7 +77,7 @@ public:
 		if (ldirDotN < 0) ldirDotN = 0;
 		Vector* reflectedDir = (*norm)*(2 * ldirDotN);
 		reflectedDir = (*reflectedDir) - (*lray.dir);
-		reflectedDir->normalize();				//i should right?
+		reflectedDir = reflectedDir->normalize();				//i should right?
 		Vector* viewingray = (*lray.dir)*(-1.0);  // negative dir of ray
 		double rdotv = (*reflectedDir).dot(*viewingray);  
 		if (rdotv < 0) rdotv = 0;

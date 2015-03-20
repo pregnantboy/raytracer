@@ -15,7 +15,7 @@ class Primitive
 public:
 	virtual bool intersect(Ray& ray, float* thit, Intersection* in)=0;
 	virtual bool intersectP(Ray& ray) = 0;
-	virtual void getBRDF(LocalGeo& local, BRDF* brdf)=0;
+	virtual void getBRDF(LocalGeo& local, BRDF& brdf)=0;
 };
 
 
@@ -42,11 +42,12 @@ public:
 		return true;
 	}
 	bool intersectP(Ray& ray) {
-		Ray* oray = (*worldToObj)* (&ray);
+		Ray* oray = (Ray*) malloc(sizeof(Ray));
+		oray = (*worldToObj)* (&ray);
 		return shape->intersectP(*oray);
 	}
 
-	void getBRDF(LocalGeo& local, BRDF* brdf) {
+	void getBRDF(LocalGeo& local, BRDF& brdf) {
 		mat->getBRDF(local, brdf);
 	}
 	
@@ -104,7 +105,7 @@ public:
 		}
 		return false;
 	}
-	void getBRDF(LocalGeo& local, BRDF* brdf) { 
+	void getBRDF(LocalGeo& local, BRDF& brdf) { 
 		cout << "error: getBRDF called from aggregate primitive" << endl;
 		system("pause");
 		// This should never get called, because in->primitive will never be an aggregate primitive

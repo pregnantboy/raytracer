@@ -343,7 +343,7 @@ public:
 	}
 	Point* operator * (Point* p){
 		vec4 *point = new vec4(p->x, p->y, p->z, 1);
-		vec4* result = new vec4();
+		vec4* result = (vec4*) malloc(sizeof(vec4));
 		mult(*result, *temp, *point);
 		return new Point(result->x, result->y, result->z);
 	}
@@ -388,7 +388,9 @@ public:
 		b = bb;
 	}
 	Color* operator+ (Color c){
-		return new Color(r + c.r, g + c.g, b + c.b);
+		Color* result =  new Color(r + c.r, g + c.g, b + c.b);
+		//result->print();
+		return result;
 	}
 	//c1 = (*c1) + (*c2);
 	Color* operator- (Color c){
@@ -459,7 +461,8 @@ public:
 	Material(BRDF* brdf){
 		constantBRDF = new BRDF(brdf->kd, brdf->ks, brdf->ka, brdf->kr);
 	}
-	void getBRDF(LocalGeo& local, BRDF* brdf) {
-		constantBRDF = new BRDF(constantBRDF->kd, constantBRDF->ks, constantBRDF->ka, constantBRDF->kr);
+	void getBRDF(LocalGeo& local, BRDF& brdf) {
+		brdf =  BRDF(constantBRDF->kd, constantBRDF->ks, constantBRDF->ka, constantBRDF->kr);
+		
 	}
 };

@@ -39,12 +39,12 @@ public:
 			double t2 = (-B - (sqdis)) / (2*A);
 			if ((t1 < t2) && (t1>0)){
 				t_hit = (float)t1;
-				cout << "t_hit" << t_hit;
+				//cout << "t_hit" << t_hit;
 				return true;
 			}
 			else if (t2 > 0){
 				t_hit = (float)t2;
-				cout << "t_hit" << t_hit;
+				//cout << "t_hit" << t_hit;
 
 				return true;
 			}
@@ -63,18 +63,16 @@ public:
 		double A = (*ray.dir).dot(*ray.dir);
 		double AC = ((*AminusC).dot(*AminusC) - r*r)*(A);
 		double dis = Bsquared - 4 * AC;
-		
+
 		if (dis >= 0){
 			double sqdis = sqrt(dis);
 			double t1 = (-B + (sqdis)) / (2 * A);
 			double t2 = (-B - (sqdis)) / (2 * A);
 			if ((t1 < t2) && (t1>0)){
 				*t_hit = t1;
-				//cout << "t_hit" << *t_hit;
 			}
 			else if (t2 > 0){
 				*t_hit = t2;
-				//cout << "t_hit" << *t_hit;
 			}
 			else{
 				return false;
@@ -83,6 +81,7 @@ public:
 			local->pos = new Point(intersect->x, intersect->y, intersect->z);
 			Vector *normal = *(local->pos) - *center;
 			local->normal = new Normal(normal);
+			return true;
 
 		}
 		return false;
@@ -105,13 +104,14 @@ public:
 		v3minusv1 = (*pt3) - (*pt1);
 		normal = new Normal( (*v2minusv1)*(*v3minusv1));
 		oppnormal = new Normal((*v3minusv1)*(*v2minusv1));
-
+		/*
 		cout << "v1:";
 		(*v1).print();
 		cout << "v2:";
 		(*v2minusv1).print();
 		cout << "v3:";
 		(*v3minusv1).print();
+		*/
 	}
 	bool intersectP(Ray &ray){
 		double xe, ye, ze,

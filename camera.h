@@ -3,42 +3,40 @@
 class Camera 
 {
 public:
-        Vector* eye,* direction,* up;
-        double fovx, fovy;
-        int width, height;
-        Camera(void);
-		Camera(Vector* cameraeye, Vector* cameradirection, Vector* upVect, double fovY, int screenwidth, int screenheight){
-			eye = cameraeye;
-			direction = cameradirection;
-			up = upVect;
-			fovy = fovY;
-			width = screenwidth;
-			height = screenwidth;
-			//fovx = 2 * atan(screenwidth / 2 / (screenheight / 2 / tan(fovy / 2 * nv_to_rad)));
-			fovx = fovY;
-		};
-		void generateRay(Sample &sample, Ray *ray){
-			Vector* input = (*eye) - *direction;
-			input->normalize();
+		Point* eyepos;
+		//camera coordinates
+		Vector* u, *v, *w;
+		Vector* ul, *ur, *ll,* lr;
 
-			Vector* output = (*up)*(*input);
-			output->normalize();
-
-			Vector* output2=  (*input)*(*output);
-
-			double z = height / 2 / tan(fovy / 2 * nv_to_rad);
-			double fovxTerm = 2 * atan(width / 2 / z);
-			double a = tan(fovxTerm / 2)*((sample.x - ((double)width / 2.0)) / ((double)width / 2.0));
-			double b = tan((fovy / 2.0)*nv_to_rad)*((((double)height / 2.0) - sample.y) / ((double)height / 2.0));
-			Vector* firstcomponent = (*output)*a;
-			Vector* secondcomponent = (*output2)*b;
-			Vector* direction = (*firstcomponent) + (*secondcomponent);
-			direction = (*direction) - (*input);
-			direction->normalize();
-
-			ray->pos = new Point(eye->x, eye->y, eye->z);
-			ray->dir = direction;
-			ray->t_min = 0.001;
-			ray->t_max = 10000;
+		Camera(Point* eyepos, Vector* ul, Vector* ur, Vector* ll, Vector* lr) {
+			this->eyepos = eyepos;
+			this->ul = ul;
+			this->ur = ur;
+			this->ll = ll;
+			this->lr = lr;
 		}
+		void generateRay(Sample* samp, Ray& ray) {
+			ray.pos = eyepos;
+			double u = 1-samp->x;
+			double v = 1-samp->y;
+			//cout << samp->x<<endl;
+			Vector *pv11 = (*ll)*v;
+			Vector* pv12 = (*ul)*(1 - v);
+			Vector* pv13 = *pv11 + *pv12;
+			Vector* pv1 = (*pv12)*u;
+
+			Vector *pv21 = (*lr)*v;
+			Vector* pv22 = (*ur)*(1 - v);
+			Vector* pv23 = *pv21 + *pv22;
+			Vector* pv2 = (*pv23)*(1 - u);
+			Vector* pv = *pv1 + *pv2;
+			Point* p = new Point(pv->x,pv->y,pv->z);
+			Vector* newdir = *p - *eyepos;
+			newdir = newdir->normalize();
+			ray.dir = newdir;
+			ray.t_min = 0;
+			ray.t_max = 10000000;
+		}
+
+	
 };
